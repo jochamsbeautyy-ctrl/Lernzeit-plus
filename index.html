@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LernZeit+</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#fffaf5;--text:#26313d;--muted:#68727d;--blue:#91b2e7;--pale:#e9eff9;--card:#fff;--radius:28px}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:720px;margin:auto;padding:34px 40px 70px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+h1{font-size:64px;line-height:1;margin:0 0 12px}.sub{font-size:34px;color:var(--muted);line-height:1.2}.lock{border:0;background:var(--pale);border-radius:26px;width:108px;height:108px;font-size:48px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:52px 0 32px}.tab,.big{border:0;border-radius:30px;background:var(--pale);padding:30px 18px;font-size:32px;font-weight:750;color:var(--text)}.tab.active,.big.primary{background:var(--blue)}
+.card{background:var(--card);border-radius:var(--radius);padding:42px;margin:28px 0;box-shadow:0 5px 24px #00000008}.hello{font-size:40px;font-weight:800}.center{text-align:center}.time{font-size:70px;font-weight:850;margin:20px 0}.pill{display:inline-block;background:var(--pale);border-radius:18px;padding:8px 18px;margin:4px;font-size:24px}
+.big{width:100%;margin:12px 0}.footer{color:var(--muted);font-size:20px;margin-top:36px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.dialog{background:white;border-radius:28px;padding:32px;width:min(520px,100%)}input,select{width:100%;padding:18px;border:2px solid #d8dee7;border-radius:18px;font-size:24px;margin:8px 0 20px}.row{display:flex;gap:12px}.row button{flex:1}.small{font-size:18px;color:var(--muted)}label{font-size:22px;font-weight:700}
+@media(max-width:520px){.wrap{padding:28px 24px}h1{font-size:52px}.sub{font-size:28px}.lock{width:88px;height:88px}.tabs{gap:16px}.tab{font-size:27px;padding:24px 8px}.time{font-size:58px}}
+
+/* v0.5: kompakter Elternbereich auf Smartphones */
+#parentModal{align-items:flex-start;overflow-y:auto;padding:12px}
+#parentModal .dialog{width:min(520px,100%);padding:22px 20px;border-radius:22px;margin:8px auto 24px}
+#parentModal h2{font-size:28px;line-height:1.1;margin:0 0 18px}
+#parentModal h3{font-size:22px;line-height:1.15;margin:22px 0 10px}
+#parentModal label{font-size:17px;display:block;margin-top:6px}
+#parentModal input,#parentModal select{padding:11px 13px;border-radius:14px;font-size:18px;margin:5px 0 12px}
+#parentModal .big{font-size:18px;padding:13px 10px;border-radius:16px;margin:7px 0}
+#parentModal .row{gap:8px}
+#parentModal .row .big{padding:14px 5px;font-size:20px}
+#parentModal .small{font-size:14px;line-height:1.35;margin-top:10px}
+@media(max-width:520px){
+ #parentModal{padding:8px}
+ #parentModal .dialog{padding:18px 16px;border-radius:18px}
+ #parentModal h2{font-size:25px}
+ #parentModal h3{font-size:20px}
+ #parentModal label{font-size:16px}
+ #parentModal input,#parentModal select{font-size:17px;padding:10px 12px;margin-bottom:10px}
+ #parentModal .big{font-size:17px;padding:12px 8px}
+ #parentModal .row .big{font-size:19px;padding:12px 4px}
+}
+
+
+/* v0.6: Elternbereich nochmals kompakter */
+#parentModal{padding:6px}
+#parentModal .dialog{padding:14px 14px 18px;margin:4px auto 16px}
+#parentModal h2{font-size:24px;margin:0 0 12px}
+#parentModal h3{font-size:19px;margin:16px 0 7px}
+#parentModal label{font-size:15px;margin-top:3px}
+#parentModal input,#parentModal select{
+  min-height:0;height:46px;padding:7px 11px;
+  font-size:16px;margin:3px 0 8px;border-radius:12px
+}
+#parentModal .big{
+  min-height:0;font-size:16px;padding:10px 7px;
+  border-radius:14px;margin:5px 0
+}
+#parentModal .row{gap:6px}
+#parentModal .row .big{font-size:17px;padding:10px 3px}
+#parentModal .small{font-size:13px;margin-top:7px}
+
+
+/* v0.7: verhindert abgeschnittene Inhalte am linken/rechten Rand */
+#parentModal{padding-left:12px;padding-right:12px;overflow-x:hidden}
+#parentModal .dialog{
+  width:100%;
+  max-width:520px;
+  margin:4px auto 16px;
+  overflow:hidden;
+}
+#parentModal h2,#parentModal h3,#parentModal label,
+#parentModal input,#parentModal select,#parentModal button{
+  max-width:100%;
+}
+#parentModal .row{width:100%}
+#parentModal .row .big{min-width:0}
+@media(max-width:520px){
+  #parentModal{padding-left:10px;padding-right:10px}
+  #parentModal .dialog{width:100%;margin-left:auto;margin-right:auto}
+}
+
+/* v0.8 */
+.wrap{padding-top:20px} h1{font-size:46px}.sub{font-size:25px}.lock{width:76px;height:76px;font-size:34px}
+.tabs{display:flex;overflow-x:auto;gap:10px;margin:24px 0 16px}.tab{min-width:105px;font-size:20px;padding:14px 10px}
+.card{padding:24px;margin:16px 0}.hello{font-size:28px}.time{font-size:48px;margin:10px}.pill{font-size:16px}
+.big{font-size:20px;padding:16px 10px}.footer{font-size:14px;margin-top:18px}
+@media(max-width:520px){.wrap{padding:18px 16px 50px}h1{font-size:38px}.sub{font-size:20px}.lock{width:62px;height:62px;font-size:27px}.card{padding:20px}.hello{font-size:24px}.time{font-size:42px}.big{font-size:18px;padding:14px 9px}}
+
+/* v1.1 Lernansicht */
+.learnMeta{display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:700;margin:8px 0}
+.progressTrack{height:12px;background:#e8e8e8;border-radius:999px;overflow:hidden;margin:10px 0 20px}
+#progressBar{height:100%;width:10%;background:currentColor;border-radius:999px;transition:width .25s}
+#answerChoices{display:grid;gap:10px}
+#answerChoices .big{margin:0!important;text-align:left}
+#answerChoices .correctAnswer{outline:3px solid #2e7d32}
+#answerChoices .wrongAnswer{outline:3px solid #b42318}
+#learnFeedback{font-size:18px}
+
+.visualTask{font-size:38px;line-height:1.45;text-align:center;letter-spacing:5px;margin:12px 0;min-height:8px}
+.dotbox{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:230px;margin:10px auto}
+.dot{width:28px;height:28px;border-radius:50%;background:currentColor;display:inline-block}
+.tenframe{display:grid;grid-template-columns:repeat(5,34px);gap:6px;justify-content:center;margin:14px auto}
+.cell{width:34px;height:34px;border:2px solid currentColor;border-radius:5px;display:flex;align-items:center;justify-content:center}
+.filled:after{content:"●";font-size:25px}
+.numberline{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;font-size:18px;margin:15px 0}
+.numberline span{border-bottom:3px solid currentColor;min-width:25px;text-align:center;padding:4px}
+.speakBtn{border:0;background:transparent;font-size:17px;font-weight:700;padding:8px 4px;margin-bottom:10px}
+
+#learnScreen.visualMode #answerChoices .big{font-size:42px;text-align:center;min-height:76px}
+#learnScreen.visualMode #questionText{font-size:20px;text-align:center}
+
+.placegrid{display:grid;grid-template-columns:repeat(4,52px);gap:5px;justify-content:center;text-align:center;margin:14px auto}
+.placegrid b{font-size:15px}.placegrid span{border:2px solid currentColor;border-radius:7px;padding:10px 4px;font-size:24px}
+.fractionbar{display:flex;justify-content:center;margin:18px auto;max-width:260px}
+.fractionbar span{width:42px;height:48px;border:2px solid currentColor;margin-left:-2px}
+.fractionbar .on{background:currentColor}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><div><h1>LernZeit+</h1><div class="sub">Lernen. Zeit verdienen.<br>Selbst entscheiden.</div></div>
+ <button class="lock" id="lockBtn" aria-label="Elternbereich">🔒</button></div>
+ <div class="tabs" id="childTabs"></div>
+ <div class="card center">
+   <div class="hello">Hallo <span id="childName">Taylor</span> 👋</div>
+   <div style="font-size:26px;margin-top:28px">Heute verfügbar</div>
+   <div class="time"><span id="available">60</span> Min.</div>
+   <span class="pill">Grundzeit <span id="base">60</span> Min.</span><br>
+   <span class="pill">Bonus heute +<span id="bonus">0</span></span>
+ </div>
+ <div id="homeActions">
+ <button id="mathBtn" class="big primary" type="button">🧮 Mathe lernen · +<span class="reward">5</span> Min.</button>
+ <button id="germanBtn" class="big" type="button">📚 Deutsch lernen · +<span class="reward">5</span> Min.</button>
+ </div>
+ <section id="learnScreen" style="display:none" class="card">
+   <button id="backLearn" type="button" class="big">← Zurück</button>
+   <h2 id="learnTitle">Lernrunde</h2>
+<div class="learnMeta"><span id="learnCategory">Übung</span><span id="learnScore">0 richtig</span></div>
+<div class="progressTrack"><div id="progressBar"></div></div>
+   <div id="visualTask" class="visualTask"></div>
+<div id="questionText" style="font-size:24px;font-weight:700;margin:18px 0"></div>
+<button id="speakBtn" type="button" class="speakBtn" aria-label="Aufgabe vorlesen">🔊 Vorlesen</button>
+   <div id="answerChoices"></div>
+   <div id="learnFeedback" style="min-height:30px;margin:14px 0;font-weight:700"></div>
+   <button id="nextQuestion" type="button" class="big primary" style="display:none">Nächste Aufgabe</button>
+ </section>
+ <div class="footer">v1.5 · Klasse 5 visuell · Stellenwert · Zahlenstrahl · Brüche · Rechenwiederholung.</div>
+</div>
+
+<div class="modal" id="pinModal"><div class="dialog">
+ <h2>🔒 Elternbereich</h2><label>PIN eingeben</label><input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="PIN">
+ <div id="pinError" style="color:#b42318;min-height:24px"></div>
+ <div class="row"><button class="big" onclick="closePin()">Abbrechen</button><button class="big primary" onclick="checkPin()">Öffnen</button></div>
+</div></div>
+
+<div class="modal" id="parentModal"><div class="dialog">
+ <h2>Elternbereich</h2>
+ <label>Kind</label><select id="pChild"></select>
+ <label>Klassenstufe</label><select id="grade"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+ <label>Lernmodus</label>
+<select id="pMode"><option value="normal">Lesen möglich</option><option value="visual">Ohne Lesen / bildlich</option></select>
+<label>Tägliche Grundzeit (Min.)</label><input id="pBase" type="number" min="0" max="600">
+ <label>Bonus pro Lernrunde (Min.)</label><input id="pReward" type="number" min="0" max="120">
+ <label>Maximale Bonuszeit pro Tag (Min.)</label><input id="pMax" type="number" min="0" max="600">
+ <button class="big primary" onclick="saveSettings()">Einstellungen speichern</button>
+ <h3>Zeit schenken</h3><div class="row"><button class="big" onclick="gift(5)">+5</button><button class="big" onclick="gift(10)">+10</button><button class="big" onclick="gift(15)">+15</button></div>
+ <h3>Kinder verwalten</h3>
+<label>Name</label><input id="editName" maxlength="24">
+<div class="row"><button class="big" onclick="renameChild()">Umbenennen</button><button class="big" onclick="deleteChild()">Löschen</button></div>
+<h3>Kind hinzufügen</h3>
+<input id="addName" maxlength="24" placeholder="Name des Kindes">
+<select id="addGrade"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+<button class="big" onclick="addChild()">+ Kind hinzufügen</button>
+<h3>Eltern-PIN ändern</h3><input id="newPin" type="password" inputmode="numeric" maxlength="8" placeholder="Neue PIN (mind. 4 Ziffern)">
+ <button class="big" onclick="changePin()">PIN ändern</button>
+ <button class="big" onclick="resetToday()">Tageswerte zurücksetzen</button>
+ <button class="big" onclick="closeParent()">Schließen</button>
+ <div class="small">Die Einstellungen werden lokal auf diesem Gerät gespeichert.</div>
+</div></div>
+
+<div class="modal" id="setupModal"><div class="dialog">
+<h2>Familie einrichten</h2><p class="small">Lege dein erstes Kinderprofil und eine Eltern-PIN an.</p>
+<label>Name des Kindes</label><input id="setupName" maxlength="24" placeholder="z. B. Mia">
+<label>Klassenstufe</label><select id="setupGrade"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+<label>Eltern-PIN</label><input id="setupPin" type="password" inputmode="numeric" maxlength="8" placeholder="4 bis 8 Ziffern">
+<div id="setupMsg" style="color:#b42318;min-height:22px"></div>
+<button class="big primary" onclick="finishSetup()">Familie einrichten</button>
+</div></div>
+<script>
+const initial={Taylor:{grade:2,base:60,reward:5,max:60,bonus:0},Elias:{grade:5,base:60,reward:5,max:60,bonus:0}};
+let data=JSON.parse(localStorage.getItem('lzData')||'null')||initial;
+let current=localStorage.getItem('lzChild')||Object.keys(data)[0]||'';
+let pin=localStorage.getItem('lzPin')||'1234';
+const def=g=>({grade:+g,base:60,reward:5,max:60,bonus:0,mode:'normal'});
+function save(){localStorage.setItem('lzData',JSON.stringify(data));localStorage.setItem('lzChild',current)}
+function tabs(){childTabs.innerHTML='';Object.keys(data).forEach(n=>{let b=document.createElement('button');b.className='tab'+(n===current?' active':'');b.textContent=n;b.onclick=()=>{current=n;render()};childTabs.appendChild(b)})}
+function render(){let ns=Object.keys(data);if(!ns.length){document.querySelector('.wrap').style.display='none';setupModal.classList.add('show');return}if(!data[current])current=ns[0];let d=data[current];if(!d.mode)d.mode='normal';childName.textContent=current;base.textContent=d.base;bonus.textContent=d.bonus;available.textContent=+d.base + +d.bonus;document.querySelectorAll('.reward').forEach(x=>x.textContent=d.reward);tabs();save()}
+lockBtn.onclick=()=>{pinInput.value='';pinError.textContent='';pinModal.classList.add('show')};
+function closePin(){pinModal.classList.remove('show')}
+function checkPin(){if(pinInput.value===pin){closePin();openParent()}else pinError.textContent='PIN ist nicht richtig.'}
+function fillSelect(){pChild.innerHTML='';Object.keys(data).forEach(n=>pChild.add(new Option(n,n)));pChild.value=current}
+function openParent(){fillSelect();loadParent();parentModal.classList.add('show')}
+function closeParent(){parentModal.classList.remove('show');render()}
+pChild.onchange=loadParent;
+function loadParent(){let d=data[pChild.value];grade.value=d.grade;pBase.value=d.base;pReward.value=d.reward;pMax.value=d.max;pMode.value=d.mode||'normal';editName.value=pChild.value}
+function saveSettings(){let d=data[pChild.value];d.grade=+grade.value;d.base=Math.max(0,+pBase.value||0);d.reward=Math.max(0,+pReward.value||0);d.max=Math.max(0,+pMax.value||0);d.mode=pMode.value;save();render();alert('Gespeichert.')}
+function gift(n){data[pChild.value].bonus+=n;save();render();loadParent()}
+function addChild(){let n=addName.value.trim();if(!n)return alert('Bitte einen Namen eingeben.');if(data[n])return alert('Der Name ist schon vorhanden.');data[n]=def(addGrade.value);current=n;addName.value='';save();fillSelect();pChild.value=n;loadParent();render()}
+function renameChild(){let old=pChild.value,n=editName.value.trim();if(!n)return;if(n!==old&&data[n])return alert('Der Name ist schon vorhanden.');if(n!==old){data[n]=data[old];delete data[old];if(current===old)current=n}save();fillSelect();pChild.value=n;loadParent();render()}
+function deleteChild(){let n=pChild.value;if(Object.keys(data).length<2)return alert('Mindestens ein Kinderprofil muss bleiben.');if(!confirm(n+' wirklich löschen?'))return;delete data[n];current=Object.keys(data)[0];save();fillSelect();loadParent();render()}
+function changePin(){let v=newPin.value.trim();if(!/^\d{4,8}$/.test(v))return alert('Bitte 4 bis 8 Ziffern verwenden.');pin=v;localStorage.setItem('lzPin',pin);newPin.value='';alert('PIN geändert.')}
+function resetToday(){data[pChild.value].bonus=0;save();render();loadParent()}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function dots(n){return '<div class="dotbox">'+Array(n).fill('<span class="dot"></span>').join('')+'</div>'}
+function frame(n){return '<div class="tenframe">'+Array.from({length:10},(_,i)=>'<span class="cell '+(i<n?'filled':'')+'"></span>').join('')+'</div>'}
+function line(a,missing){return '<div class="numberline">'+a.map((x,i)=>'<span>'+(i===missing?'❓':x)+'</span>').join('')+'</div>'}
+function placeValue(n){
+ let t=String(n).padStart(4,'0').split('');
+ return `<div class="placegrid"><b>T</b><b>H</b><b>Z</b><b>E</b>${t.map(x=>`<span>${x}</span>`).join('')}</div>`;
+}
+function numberLine5(start,step,missing){
+ let vals=Array.from({length:5},(_,i)=>start+i*step);
+ return {html:line(vals,missing),answer:vals[missing]};
+}
+function fractionPic(num,den){
+ return `<div class="fractionbar">${Array.from({length:den},(_,i)=>`<span class="${i<num?'on':''}"></span>`).join('')}</div>`;
+}
+function mathQuestion(grade,visual=false){
+ let g=+grade||2,a,b,ans,q,cat,vis='',mode=Math.floor(Math.random()*5);
+ if(visual && g<=2){
+   if(mode===0){ans=2+Math.floor(Math.random()*9);q='Wie viele?';vis=dots(ans);cat='Mengen erkennen';}
+   else if(mode===1){ans=1+Math.floor(Math.random()*10);q='Wie viele Punkte siehst du?';vis=frame(ans);cat='Zehnerfeld';}
+   else if(mode===2){a=1+Math.floor(Math.random()*5);b=1+Math.floor(Math.random()*5);ans=a+b;q='Wie viel ist das zusammen?';vis='🍎'.repeat(a)+' ＋ '+'🍎'.repeat(b);cat='Plus mit Bildern';}
+   else if(mode===3){a=Math.floor(Math.random()*16);let seq=[a,a+1,a+2,a+3,a+4],m=2;ans=seq[m];q='Welche Zahl fehlt?';vis=line(seq,m);cat='Zahlenreihe';}
+   else{ans=1+Math.floor(Math.random()*10);q='Welche Zahl passt zum Bild?';vis=frame(ans);cat='Zahl & Menge';}
+ } else if(g<=1){
+   if(mode<3){a=Math.floor(Math.random()*11);b=Math.floor(Math.random()*(11-a));ans=a+b;q=`Was ist ${a} + ${b}?`;cat='Plus bis 20';}
+   else{a=5+Math.floor(Math.random()*16);b=Math.floor(Math.random()*(a+1));ans=a-b;q=`Was ist ${a} − ${b}?`;cat='Minus bis 20';}
+ } else if(g==2){
+   if(mode<2){a=Math.floor(Math.random()*51);b=Math.floor(Math.random()*(101-a));ans=a+b;q=`Was ist ${a} + ${b}?`;cat='Plus bis 100';}
+   else if(mode<4){a=20+Math.floor(Math.random()*81);b=Math.floor(Math.random()*(a+1));ans=a-b;q=`Was ist ${a} − ${b}?`;cat='Minus bis 100';}
+   else{a=Math.floor(Math.random()*91);ans=a+10;q=`Was ist 10 mehr als ${a}?`;cat='Zahlverständnis';}
+ } else if(g==3){
+   if(mode<3){a=2+Math.floor(Math.random()*9);b=2+Math.floor(Math.random()*10);ans=a*b;q=`Was ist ${a} × ${b}?`;cat='Einmaleins';}
+   else{b=2+Math.floor(Math.random()*9);ans=2+Math.floor(Math.random()*10);a=b*ans;q=`Was ist ${a} ÷ ${b}?`;cat='Geteilt';}
+ } else if(g==4){
+   a=100+Math.floor(Math.random()*900);b=10+Math.floor(Math.random()*190);
+   if(mode<3){ans=a+b;q=`Was ist ${a} + ${b}?`;cat='Addition';}else{ans=a-b;q=`Was ist ${a} − ${b}?`;cat='Subtraktion';}
+ } else {
+   let m=Math.floor(Math.random()*8);
+   if(m===0){a=1000+Math.floor(Math.random()*8000);ans=Math.floor(a/100)%10;q='Welche Ziffer steht an der Hunderterstelle?';vis=placeValue(a);cat='Stellenwert';}
+   else if(m===1){let nl=numberLine5(100*Math.floor(Math.random()*10),pick([10,50,100]),2);ans=nl.answer;q='Welche Zahl fehlt auf dem Zahlenstrahl?';vis=nl.html;cat='Zahlenstrahl';}
+   else if(m===2){a=100+Math.floor(Math.random()*900);b=10+Math.floor(Math.random()*90);ans=a+b;q=`Berechne ${a} + ${b}.`;cat='Addition';}
+   else if(m===3){a=300+Math.floor(Math.random()*700);b=10+Math.floor(Math.random()*250);ans=a-b;q=`Berechne ${a} − ${b}.`;cat='Subtraktion';}
+   else if(m===4){a=10+Math.floor(Math.random()*90);b=2+Math.floor(Math.random()*12);ans=a*b;q=`Berechne ${a} × ${b}.`;cat='Multiplikation';}
+   else if(m===5){b=2+Math.floor(Math.random()*12);ans=5+Math.floor(Math.random()*30);a=b*ans;q=`Berechne ${a} ÷ ${b}.`;cat='Division';}
+   else if(m===6){let den=pick([2,4,5]),num=1+Math.floor(Math.random()*(den-1));ans=num;q=`Wie viele von ${den} Teilen sind markiert?`;vis=fractionPic(num,den);cat='Brüche verstehen';}
+   else{a=pick([120,250,480,750]);ans=Math.round(a/10);q=`Was sind 10 % von ${a}?`;cat='Prozent – Einstieg';}
+ }
+ let wrong1=ans+pick([1,2,3,5,10]),wrong2=Math.max(0,ans-pick([1,2,3,5,10]));
+ if(wrong2===ans||wrong2===wrong1)wrong2=ans+4;
+ let opts=shuffle([String(ans),String(wrong1),String(wrong2)]);
+ return {q,a:opts,ok:opts.indexOf(String(ans)),cat,vis};
+}
+const germanByGrade={
+1:[
+['Welches Wort beginnt mit B?',['Ball','Maus','Sonne'],0],['Welches Wort beginnt mit M?',['Auto','Maus','Haus'],1],
+['Was reimt sich auf Haus?',['Maus','Kind','Baum'],0],['Was reimt sich auf Hand?',['Wand','Hund','Hemd'],0],
+['Welches Wort ist richtig?',['Hund','Hunt','Huntd'],0],['Welches Wort ist richtig?',['Katze','Kaze','Katse'],0],
+['Welches Wort beginnt mit S?',['Sonne','Ball','Maus'],0],['Welches Wort endet mit -e?',['Blume','Hund','Ball'],0],
+['Welches Wort hat zwei Silben?',['Mama','Ball','Hund'],0],['Welches Wort passt: Die ___ scheint.',['Sonne','Hund','Tisch'],0],
+['Welcher Satz ist richtig?',['Ich spiele.','ich spiele.','Ich spiele'],0],['Was ist ein Tier?',['Katze','Tasse','Haus'],0]
+],
+2:[
+['Welches Wort ist richtig geschrieben?',['Fahrrad','Fahrad','Farrad'],0],['Welches Wort ist ein Nomen?',['Haus','laufen','schnell'],0],
+['Welches Wort ist ein Verb?',['springen','Schule','blau'],0],['Welches Wort ist ein Adjektiv?',['schön','Hund','rennen'],0],
+['Welcher Satz beginnt richtig?',['Heute spiele ich.','heute spiele ich.','Heute Spiele ich.'],0],['Welche Mehrzahl stimmt?',['Häuser','Hauses','Häusers'],0],
+['Welches Wort ist ein Nomen?',['Freund','lustig','spielen'],0],['Welches Wort ist ein Verb?',['lesen','Buch','leise'],0],
+['Welches Wort ist ein Adjektiv?',['klein','Katze','laufen'],0],['Welche Schreibweise stimmt?',['Schule','Schuhle','Shule'],0],
+['Welcher Satz endet richtig?',['Der Hund schläft.','Der Hund schläft','der Hund schläft.'],0],['Welche Mehrzahl stimmt?',['Kinder','Kinds','Kinders'],0],
+['Was passt? „Der Ball ist ___.“',['rund','laufen','Tisch'],0],['Was passt? „Wir ___ ein Buch.“',['lesen','Buch','schön'],0],
+['Welches Wort wird großgeschrieben?',['Auto','laufen','schnell'],0],['Welche Schreibweise stimmt?',['Frühstück','Früstük','Frühstuck'],0]
+],
+3:[
+['Welches Wort ist ein Verb?',['laufen','Tisch','fröhlich'],0],['Welches Wort ist ein Adjektiv?',['mutig','Schule','lesen'],0],
+['Welche Mehrzahl stimmt?',['die Häuser','die Häusers','die Hause'],0],['Welche Schreibweise stimmt?',['plötzlich','plözlich','plötzlichh'],0],
+['Was ist das Nomen? „Der schnelle Hund rennt.“',['Hund','schnelle','rennt'],0],['Was ist das Verb? „Mia malt ein Bild.“',['malt','Mia','Bild'],0],
+['Welche Vergangenheitsform stimmt?',['ich spielte','ich spielten','ich spieltest'],0],['Welches Wort hat einen Doppelkonsonanten?',['Sonne','Hase','Blume'],0],
+['Welcher Satz ist richtig?',['Morgen gehen wir schwimmen.','morgen gehen wir Schwimmen.','Morgen Gehen wir schwimmen.'],0],
+['Welche Schreibweise stimmt?',['Schlüssel','Schlüsel','Schlüssell'],0],['Was ist ein Adjektiv?',['freundlich','Freund','freuen'],0],
+['Welche Mehrzahl stimmt?',['Bücher','Buchs','Büchers'],0],['Was ist das Subjekt? „Tom spielt Fußball.“',['Tom','spielt','Fußball'],0],
+['Was ist das Prädikat? „Lena singt laut.“',['singt','Lena','laut'],0]
+],
+4:[
+['Was ist das Prädikat in „Mia liest ein Buch.“?',['liest','Mia','Buch'],0],['Was ist das Subjekt in „Der Hund bellt laut.“?',['Der Hund','bellt','laut'],0],
+['Welches Wort ist richtig?',['nämlich','nähmlich','nemlich'],0],['Welche Zeitform ist „ich spielte“?',['Präteritum','Präsens','Futur'],0],
+['Welche Zeitform ist „ich habe gespielt“?',['Perfekt','Präteritum','Futur'],0],['Was ist das Subjekt? „Am Morgen fährt Paul zur Schule.“',['Paul','Am Morgen','zur Schule'],0],
+['Welches Wort ist ein Adjektiv?',['aufmerksam','Aufmerksamkeit','beachten'],0],['Welche Schreibweise stimmt?',['interessant','interesant','intressant'],0],
+['Was ist das Prädikat? „Die Katze schläft auf dem Sofa.“',['schläft','Katze','Sofa'],0],['Welche Steigerung stimmt?',['gut – besser – am besten','gut – guter – gutest','gut – mehr gut – bestens'],0],
+['Welche Zeitform ist „wir werden fahren“?',['Futur','Perfekt','Präsens'],0],['Welcher Satz ist richtig?',['Das Mädchen liest ein spannendes Buch.','Das mädchen liest ein Spannendes buch.','das Mädchen liest ein spannendes Buch.'],0]
+],
+5:[
+['Welche Wortart ist „schnell“ in „Er läuft schnell.“?',['Adjektiv','Nomen','Verb'],0],['Was ist das Prädikat? „Die Kinder spielen im Garten.“',['spielen','Kinder','Garten'],0],
+['Welche Schreibweise stimmt?',['Rhythmus','Rythmus','Rhytmus'],0],['Welche Zeitform ist „wir sind gegangen“?',['Perfekt','Präsens','Futur'],0],
+['Welcher Satz enthält eine Konjunktion?',['Ich lese, weil es spannend ist.','Ich lese.','Das Buch liegt dort.'],0],
+['Welche Zeitform ist „sie schrieb“?',['Präteritum','Perfekt','Futur'],0],['Was ist das Subjekt? „Nach der Schule besucht Leon seinen Freund.“',['Leon','seinen Freund','Nach der Schule'],0],
+['Welche Schreibweise stimmt?',['Adresse','Addresse','Adrese'],0],['Welche Wortart ist „obwohl“?',['Konjunktion','Nomen','Adjektiv'],0],
+['Welcher Satz enthält ein Adverb?',['Er kommt morgen.','Der große Hund bellt.','Mia liest ein Buch.'],0],
+['Was ist der Infinitiv von „ging“?',['gehen','gingen','gegangen'],0],['Welche Form ist Plusquamperfekt?',['ich hatte gespielt','ich habe gespielt','ich spielte'],0],
+['Welcher Satz ist ein Nebensatz?',['weil ich müde bin','Ich bin müde.','Morgen schlafe ich.'],0],['Welche Schreibweise stimmt?',['Temperatur','Temparatur','Temperratur'],0]
+]};
+const visualGerman=[
+ {q:'Tippe auf das Bild: Apfel',spoken:'Tippe auf den Apfel.',a:['🍎','🐶','🚗'],ok:0,cat:'Hören & Bilder'},
+ {q:'Tippe auf das Bild: Hund',spoken:'Tippe auf den Hund.',a:['🐱','🐶','🍌'],ok:1,cat:'Hören & Bilder'},
+ {q:'Tippe auf das Bild: Haus',spoken:'Tippe auf das Haus.',a:['🏠','🌳','🚲'],ok:0,cat:'Hören & Bilder'},
+ {q:'Tippe auf das Bild: Katze',spoken:'Tippe auf die Katze.',a:['🐭','🐱','🐸'],ok:1,cat:'Hören & Bilder'},
+ {q:'Tippe auf das Bild: Sonne',spoken:'Tippe auf die Sonne.',a:['🌙','⭐','☀️'],ok:2,cat:'Hören & Bilder'},
+ {q:'Welches Bild beginnt mit M?',spoken:'Welches Bild beginnt mit dem Laut M?',a:['🐭','🐶','🍎'],ok:0,cat:'Anlaute hören'},
+ {q:'Welches Bild beginnt mit B?',spoken:'Welches Bild beginnt mit dem Laut B?',a:['☀️','⚽','🐱'],ok:1,cat:'Anlaute hören'},
+ {q:'Welches Bild beginnt mit A?',spoken:'Welches Bild beginnt mit dem Laut A?',a:['🍎','🐭','🏠'],ok:0,cat:'Anlaute hören'},
+ {q:'Was reimt sich auf Haus?',spoken:'Was reimt sich auf Haus? Tippe auf die Maus.',a:['🐭','🐶','🐱'],ok:0,cat:'Reime hören'},
+ {q:'Tippe auf das Fahrzeug.',spoken:'Tippe auf das Fahrzeug.',a:['🌳','🚗','🍎'],ok:1,cat:'Wörter verstehen'},
+ {q:'Tippe auf das Tier.',spoken:'Tippe auf das Tier.',a:['🏠','🐸','🚲'],ok:1,cat:'Wörter verstehen'},
+ {q:'Tippe auf die Banane.',spoken:'Tippe auf die Banane.',a:['🍓','🍌','🍎'],ok:1,cat:'Hören & Bilder'}
+];
+function visualGermanQuestion(){
+ let x=pick(visualGerman),correct=x.a[x.ok],choices=shuffle(x.a);
+ return {q:'🔊 Höre die Aufgabe an',spoken:x.spoken,a:choices,ok:choices.indexOf(correct),cat:x.cat,vis:''};
+}
+function germanQuestion(grade){
+ let g=Math.min(5,Math.max(1,+grade||2)),pool=germanByGrade[g]||germanByGrade[5],x=pick(pool);
+ let correct=x[1][x[2]], choices=shuffle(x[1]);
+ return {q:x[0],a:choices,ok:choices.indexOf(correct),cat:(g<=2?'Wörter & Sätze':g==3?'Wortarten & Rechtschreibung':g==4?'Grammatik & Rechtschreibung':'Grammatik & Rechtschreibung')};
+}
+let roundSubject='',roundIndex=0,roundCorrect=0,roundQuestions=[];
+function learn(subject){
+ let d=data[current]; if(!d)return;
+ if(+d.bonus>=+d.max){alert('Die maximale Bonuszeit für heute ist erreicht.');return;}
+ roundSubject=subject;roundIndex=0;roundCorrect=0;roundQuestions=[];
+ for(let i=0;i<10;i++){
+   if(subject==='Mathe') roundQuestions.push(mathQuestion(d.grade,d.mode==='visual'));
+   else roundQuestions.push(d.mode==='visual'?visualGermanQuestion():germanQuestion(d.grade));
+ }
+ homeActions.style.display='none';learnScreen.style.display='block';learnScreen.classList.toggle('visualMode',d.mode==='visual');showQuestion();
+}
+function showQuestion(){
+ let item=roundQuestions[roundIndex];
+ learnTitle.textContent=(roundSubject==='Mathe'?'🧮 ':'📚 ')+roundSubject+' · Klasse '+data[current].grade+' · '+(roundIndex+1)+'/10';
+ visualTask.innerHTML=item.vis||'';questionText.textContent=item.q;answerChoices.innerHTML='';learnFeedback.textContent='';nextQuestion.style.display='none';learnCategory.textContent=item.cat||'Übung';learnScore.textContent=roundCorrect+' richtig';progressBar.style.width=((roundIndex+1)*10)+'%';
+ item.a.forEach((txt,i)=>{let b=document.createElement('button');b.type='button';b.className='big';b.textContent=txt;b.style.marginBottom='10px';b.addEventListener('click',()=>answer(i));answerChoices.appendChild(b)});
+ if(data[current].mode==='visual' && 'speechSynthesis' in window){
+   setTimeout(()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(item.spoken||item.q);u.lang='de-DE';speechSynthesis.speak(u)},250);
+ }
+}
+function answer(i){
+ let item=roundQuestions[roundIndex],buttons=[...answerChoices.querySelectorAll('button')];
+ buttons.forEach(x=>x.disabled=true);
+ buttons[item.ok].classList.add('correctAnswer');
+ if(i===item.ok){roundCorrect++;learnFeedback.textContent='✅ Richtig – weiter so!';}
+ else {buttons[i].classList.add('wrongAnswer');learnFeedback.textContent='❌ Noch nicht. Richtig ist: '+item.a[item.ok];}
+ learnScore.textContent=roundCorrect+' richtig';
+ nextQuestion.style.display='block';nextQuestion.textContent=roundIndex===9?'Lernrunde abschließen':'Nächste Aufgabe →';
+}
+function advanceRound(){
+ if(roundIndex<9){roundIndex++;showQuestion();return;}
+ let d=data[current];d.bonus=Math.min(+d.max,+d.bonus + +d.reward);save();render();
+ questionText.textContent=roundCorrect+' von 10 Aufgaben richtig.';
+ learnFeedback.textContent='🎉 Lernrunde geschafft! +'+d.reward+' Minuten verdient.';
+ answerChoices.innerHTML='';nextQuestion.style.display='none';
+}
+function closeLearn(){learnScreen.style.display='none';homeActions.style.display='block';render();}
+function finishSetup(){let n=setupName.value.trim(),p=setupPin.value.trim();if(!n)return setupMsg.textContent='Bitte Namen eingeben.';if(!/^\d{4,8}$/.test(p))return setupMsg.textContent='PIN: 4 bis 8 Ziffern.';data={[n]:def(setupGrade.value)};current=n;pin=p;localStorage.setItem('lzPin',pin);save();setupModal.classList.remove('show');document.querySelector('.wrap').style.display='block';render()}
+
+document.getElementById('mathBtn').addEventListener('click',()=>learn('Mathe'));
+document.getElementById('germanBtn').addEventListener('click',()=>learn('Deutsch'));
+document.getElementById('backLearn').addEventListener('click',closeLearn);
+document.getElementById('nextQuestion').addEventListener('click',advanceRound);
+document.getElementById('speakBtn').addEventListener('click',()=>{
+ let item=roundQuestions[roundIndex]; if(!item)return;
+ if('speechSynthesis' in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(item.spoken||item.q);u.lang='de-DE';speechSynthesis.speak(u);}
+});
+
+render();
+</script>
+</body></html>
