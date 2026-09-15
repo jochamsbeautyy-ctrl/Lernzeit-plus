@@ -18,6 +18,13 @@ header{display:flex;justify-content:space-between;align-items:center} h1{font-si
 .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{padding:20px;border:0;border-radius:18px;font-size:25px;background:#edf3fc}
 .timer{font-size:38px;font-weight:800}.parent input,.parent select{width:100%;padding:13px;margin:6px 0 14px;border:1px solid #ccd3dc;border-radius:12px;font-size:18px}
 label{font-weight:700}.row{display:flex;gap:10px}.row>*{flex:1}
+.pinOverlay{position:fixed;inset:0;background:#26334588;display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.pinDialog{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;box-shadow:0 14px 45px #26334544}
+.pinDialog h2{margin:0 0 8px;font-size:28px}.pinDialog p{margin:0 0 14px;color:#6e7783}
+.pinDialog input{width:100%;padding:14px;border:1px solid #ccd3dc;border-radius:12px;font-size:24px;text-align:center;letter-spacing:5px}
+.pinActions{display:flex;gap:10px;margin-top:16px}.pinActions button{flex:1;border:0;border-radius:14px;padding:13px;font-size:18px;font-weight:700}
+.pinCancel{background:#edf3fc}.pinOk{background:#8fb5ea}.pinError{min-height:22px;color:#b42318;margin-top:8px;font-weight:700}
+.danger{width:100%;border:1px solid #e47b70;border-radius:14px;background:#fff0ed;color:#9b231b;padding:12px;font-size:17px;font-weight:700;margin:-4px 0 16px}
 
 .feedback{margin:18px 0 4px;padding:15px;border-radius:16px;font-size:22px;font-weight:800;text-align:center}
 .feedback.ok{background:#e8f7ec}
@@ -48,7 +55,7 @@ label{font-weight:700}.row{display:flex;gap:10px}.row>*{flex:1}
 </div>
 </section>
 <section id="learn" class="hidden"><div class="card"><div class="timer" id="timer">10:00</div><div class="small" id="subject"></div><div class="question" id="question"></div><div class="answers" id="answers"></div><p class="small">⭐ Für den Stern zählt das Mitmachen – nicht, wie viele Antworten richtig sind.</p></div><button class="secondary" onclick="stopLearning()">Lernrunde beenden</button></section>
-<section id="parent" class="hidden parent"><div class="card"><h2>Elternbereich</h2><label>Kind</label><select id="pChild"></select><label>Klasse</label><select id="pGrade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>Mathe – Lernbereich</label>
+<section id="parent" class="hidden parent"><div class="card"><h2>Elternbereich</h2><label>Kind auswählen</label><select id="pChild"></select><label>Name des Kindes</label><input id="pName" placeholder="Name des Kindes"><button class="danger" type="button" onclick="deleteChild()">🗑️ Ausgewähltes Kind löschen</button><label>Klasse</label><select id="pGrade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>Mathe – Lernbereich</label>
 <select id="pMathTopic">
 <option value="mix">Gemischt</option>
 <option value="wiederholung">🔁 Klassen-Wiederholung</option>
@@ -95,6 +102,14 @@ label{font-weight:700}.row{display:flex;gap:10px}.row>*{flex:1}
  <div class="small" style="margin-top:10px">Die Wochensterne bleiben unabhängig von der Handyzeit bestehen.</div><div id="phoneBalance" style="margin-top:10px;font-weight:700"></div>
 </div>
 <button class="big" onclick="saveParent()">Speichern</button></div><div class="card" id="progressCard"><h2>📊 Lernfortschritt</h2><div id="progressStats"></div></div><div class="card"><h2>Kind hinzufügen</h2><input id="newName" placeholder="Name"><button class="secondary" onclick="addChild()">+ Kind hinzufügen</button></div><button class="secondary" onclick="showHome()">Zurück</button></section>
+</div>
+<div id="pinOverlay" class="pinOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+ <div class="pinDialog">
+  <h2 id="pinTitle">Elternbereich</h2><p id="pinMessage">Bitte PIN eingeben.</p>
+  <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Eltern-PIN">
+  <div id="pinError" class="pinError"></div>
+  <div class="pinActions"><button id="pinCancel" class="pinCancel" type="button">Abbrechen</button><button id="pinOk" class="pinOk" type="button">Weiter</button></div>
+ </div>
 </div>
 <script>
 const K='lz3data';
@@ -970,7 +985,18 @@ function startLearning(s){if(!weakMode)weakPool=[];currentSubject=s;sec=getLearn
 function stopLearning(){clearInterval(tick);showHome()}
 function finish(){if(confirm('Lernzeit geschafft! ⭐\\nElternteil: Stern bestätigen?')){let i=(new Date().getDay()+6)%7;child().stars[i]++;save();let e=addEarnedPhoneTime();alert('⭐ Stern gesammelt!'+(e?'\\n📱 +'+e+' Min. Bonuszeit':'')+(getPhoneSettings().enabled?'\\n📱 Bonuszeit: '+getPhoneSettings().earned+' Min.':''))}showHome()}
 function showHome(){document.getElementById('learn').classList.add('hidden');document.getElementById('parent').classList.add('hidden');document.getElementById('home').classList.remove('hidden');render();setTimeout(renderBonusChild,0)}
-document.getElementById('parentBtn').onclick=()=>{let pin=localStorage.getItem('lz3pin');if(!pin){pin=prompt('Neue Eltern-PIN festlegen:');if(!pin)return;localStorage.setItem('lz3pin',pin)}else if(prompt('Eltern-PIN:')!==pin)return;document.getElementById('home').classList.add('hidden');document.getElementById('learn').classList.add('hidden');document.getElementById('parent').classList.remove('hidden');setTimeout(()=>{loadPhoneSettings();renderLearningMinutesSetting()},0);let s=document.getElementById('pChild');s.innerHTML=D.children.map((c,i)=>'<option value="'+i+'">'+c.name+'</option>').join('');s.value=D.current;loadParent();s.onchange=()=>{D.current=+s.value;loadParent();setTimeout(loadPhoneSettings,0)}}
+function openParentArea(){document.getElementById('home').classList.add('hidden');document.getElementById('learn').classList.add('hidden');document.getElementById('parent').classList.remove('hidden');setTimeout(()=>{loadPhoneSettings();renderLearningMinutesSetting()},0);let s=document.getElementById('pChild');s.innerHTML=D.children.map((c,i)=>'<option value="'+i+'">'+c.name+'</option>').join('');s.value=D.current;loadParent();s.onchange=()=>{D.current=+s.value;loadParent();setTimeout(loadPhoneSettings,0)}}
+function showPinDialog(){
+ const overlay=document.getElementById('pinOverlay'),input=document.getElementById('pinInput'),error=document.getElementById('pinError');
+ const saved=localStorage.getItem('lz3pin');
+ document.getElementById('pinMessage').textContent=saved?'Bitte Eltern-PIN eingeben.':'Lege jetzt eine neue Eltern-PIN fest.';
+ input.value='';error.textContent='';overlay.classList.remove('hidden');setTimeout(()=>input.focus(),50);
+ const close=()=>{overlay.classList.add('hidden');document.getElementById('pinOk').onclick=null;input.onkeydown=null};
+ document.getElementById('pinCancel').onclick=close;
+ const submit=()=>{const value=input.value.trim();if(!value){error.textContent='Bitte eine PIN eingeben.';return}if(saved&&value!==saved){error.textContent='Die PIN ist nicht richtig.';input.value='';input.focus();return}if(!saved)localStorage.setItem('lz3pin',value);close();openParentArea()};
+ document.getElementById('pinOk').onclick=submit;input.onkeydown=e=>{if(e.key==='Enter')submit()};
+}
+document.getElementById('parentBtn').onclick=showPinDialog;
 
 
 function topicFromQuestion(subject,q){
@@ -1085,12 +1111,14 @@ function renderProgress(){
 }
 function loadParent(){let c=child();ensureWeek(c);renderProgress();
  c.mathTopic??='mix';c.germanTopic??='mix';
+ document.getElementById('pName').value=c.name||'';
  document.getElementById('pMathTopic').value=c.mathTopic;
  document.getElementById('pGermanTopic').value=c.germanTopic;document.getElementById('pGrade').value=c.grade;document.getElementById('pGoal').value=c.goal;document.getElementById('pReward').value=c.reward;document.getElementById('pMode').value=c.mode}
-function saveParent(){let c=child();c.grade=+document.getElementById('pGrade').value;
+function saveParent(){let c=child(),oldName=c.name||'Kind',newName=document.getElementById('pName').value.trim();if(!newName)return alert('Bitte den Namen des Kindes eingeben.');c.name=newName;c.grade=+document.getElementById('pGrade').value;
  c.mathTopic=document.getElementById('pMathTopic').value;
- c.germanTopic=document.getElementById('pGermanTopic').value;c.goal=+document.getElementById('pGoal').value;c.reward=document.getElementById('pReward').value;c.mode=document.getElementById('pMode').value;save();alert('Gespeichert.');showHome()}
+ c.germanTopic=document.getElementById('pGermanTopic').value;c.goal=+document.getElementById('pGoal').value;c.reward=document.getElementById('pReward').value;c.mode=document.getElementById('pMode').value;if(oldName!==newName){let oldKey='lz5phone_'+oldName,newKey='lz5phone_'+newName,phone=localStorage.getItem(oldKey);if(phone&&!localStorage.getItem(newKey))localStorage.setItem(newKey,phone);localStorage.removeItem(oldKey)}save();alert('Gespeichert.');showHome()}
 function addChild(){let n=document.getElementById('newName').value.trim();if(!n)return alert('Bitte einen Namen eingeben.');D.children.push({name:n,grade:1,goal:5,reward:'',mode:'audio',stars:[0,0,0,0,0,0,0]});D.current=D.children.length-1;save();document.getElementById('newName').value='';alert('Kind hinzugefügt.');showHome()}
+function deleteChild(){if(D.children.length<=1)return alert('Mindestens ein Kind muss angelegt bleiben.');let c=child();if(!confirm('Soll „'+c.name+'“ wirklich gelöscht werden?'))return;localStorage.removeItem('lz5phone_'+(c.name||'Kind'));D.children.splice(D.current,1);D.current=Math.max(0,D.current-1);save();alert('Kind gelöscht.');showHome()}
 render();
 
 function phoneKey(){return 'lz5phone_'+(child().name||'Kind')}
