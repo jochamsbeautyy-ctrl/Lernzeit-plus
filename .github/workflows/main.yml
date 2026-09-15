@@ -107,6 +107,7 @@ jobs:
           import android.app.Activity;
           import android.os.Bundle;
           import android.webkit.WebSettings;
+          import android.webkit.WebChromeClient;
           import android.webkit.WebView;
 
           public class MainActivity extends Activity {
@@ -121,6 +122,7 @@ jobs:
                   settings.setJavaScriptEnabled(true);
                   settings.setDomStorageEnabled(true);
                   settings.setAllowFileAccess(true);
+                  webView.setWebChromeClient(new WebChromeClient());
 
                   webView.loadUrl("file:///android_asset/index.html");
               }
