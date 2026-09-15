@@ -1,1 +1,7 @@
-{"name":"LernZeit+","short_name":"LernZeit+","start_url":"./","display":"standalone","background_color":"#fffaf5","theme_color":"#fffaf5"}
+{
+  "name": "LernZeit+",
+  "short_name": "LernZeit+",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "index.html"
+}
